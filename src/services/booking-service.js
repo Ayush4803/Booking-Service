@@ -7,21 +7,51 @@ class BookingService {
     this.bookingRepository = new BookingRepository();
   }
 
-  // Create a booking
   async createBooking(data) {
     try {
       const flightId = data.flightId;
-      const getFlightRequestURL = `${FLIGHT_SERVICE_PATH}/${flightId}`;
-      const flightResponse = await axios.get(getFlightRequestURL);
+      const flightUrl = `${FLIGHT_SERVICE_PATH}/${flightId}`;
+
+      // Fetch flight
+      const flightResponse = await axios.get(flightUrl);
       const flight = flightResponse.data.data;
 
-      //console.log("FROM BOOKING SERVICE", flight);
+      if (data.noOfSeats > flight.totalSeats) {
+        throw new Error('Not enough seats available.');
+      }
 
-      return flight;
+      const totalCost = flight.price * data.noOfSeats;
+      const bookingPayload = { ...data, totalCost, status: 'Inprocess' };
+
+      // Create booking
+      const booking = await this.bookingRepository.create(bookingPayload);
+
+      // Update flight seats
+      try {
+        await axios.patch(flightUrl, {
+          totalSeats: flight.totalSeats - data.noOfSeats
+        });
+      } catch (err) {
+        // Rollback booking if seat update fails
+        await this.bookingRepository.deleteById(booking.id);
+        throw new Error('Booking failed: unable to update flight seats.');
+      }
+
+      return booking;
     } catch (error) {
-      console.log('Error fetching flight by id:', error.message);
+      console.log('Error in BookingService.createBooking:', error.message);
       throw error;
     }
+  }
+
+  async getAllBookings() {
+    return this.bookingRepository.getAll();
+  }
+
+  async getBookingById(id) {
+    const booking = await this.bookingRepository.getById(id);
+    if (!booking) throw new Error('Booking not found');
+    return booking;
   }
 }
 

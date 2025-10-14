@@ -1,41 +1,64 @@
 const { BookingService } = require('../services/booking-service');
 const bookingService = new BookingService();
 
+// Create booking
 const createBooking = async (req, res) => {
   try {
-    const booking = await bookingService.createBooking(req.body); // ✅ matches service method
-    return res.status(201).json({
+    const booking = await bookingService.createBooking(req.body);
+    res.status(201).json({
       data: booking,
       success: true,
       err: {},
-      message: 'Successfully created a booking',
+      message: 'Successfully created a booking'
     });
   } catch (error) {
-    return res.status(500).json({
+    res.status(500).json({
       data: {},
       success: false,
       message: 'Failed to create booking',
-      err: error.message || error,
+      err: error.message || error
     });
   }
 };
 
+// Get all bookings
 const getAllBookings = async (req, res) => {
   try {
     const bookings = await bookingService.getAllBookings();
-    return res.status(200).json({
+    res.status(200).json({
       data: bookings,
       success: true,
-      message: 'Bookings fetched successfully',
+      err: {},
+      message: 'Bookings fetched successfully'
     });
   } catch (error) {
-    return res.status(500).json({
+    res.status(500).json({
       data: {},
       success: false,
       message: 'Failed to fetch bookings',
-      err: error.message || error,
+      err: error.message || error
     });
   }
 };
 
-module.exports = { createBooking, getAllBookings };
+// Get single booking by ID
+const getBookingById = async (req, res) => {
+  try {
+    const booking = await bookingService.getBookingById(req.params.id);
+    res.status(200).json({
+      data: booking,
+      success: true,
+      err: {},
+      message: 'Booking fetched successfully'
+    });
+  } catch (error) {
+    res.status(404).json({
+      data: {},
+      success: false,
+      message: error.message || 'Booking not found',
+      err: error.message || error
+    });
+  }
+};
+
+module.exports = { createBooking, getAllBookings, getBookingById };

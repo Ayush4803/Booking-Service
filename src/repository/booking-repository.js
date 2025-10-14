@@ -1,7 +1,6 @@
-const { Booking } = require('../models');
-
+const { Booking } = require('../models'); // <- now Booking is defined
 class BookingRepository {
-  async createBooking(data) {
+  async create(data) {
     try {
       const booking = await Booking.create(data);
       return booking;
@@ -11,7 +10,7 @@ class BookingRepository {
     }
   }
 
-  async getAllBookings() {
+  async getAll() {
     try {
       return await Booking.findAll();
     } catch (error) {
@@ -20,7 +19,7 @@ class BookingRepository {
     }
   }
 
-  async getBookingById(id) {
+  async getById(id) {
     try {
       return await Booking.findByPk(id);
     } catch (error) {
